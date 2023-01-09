@@ -7,6 +7,8 @@ import (
 	"github.com/shomali11/slacker"
 	"log"
 	"os"
+	"strconv"
+	"time"
 )
 
 func printCommandEvents(analyticsChannel <-chan *slacker.CommandEvent) {
@@ -18,6 +20,18 @@ func printCommandEvents(analyticsChannel <-chan *slacker.CommandEvent) {
 		fmt.Println(event.Event)
 		fmt.Println()
 	}
+}
+
+func CountAge(botCtx slacker.BotContext, request slacker.Request, response slacker.ResponseWriter) {
+	var year = request.Param("year")
+	yob, err := strconv.Atoi(year)
+	var year_now = time.Now().Year()
+	if err != nil {
+		fmt.Println("Error")
+	}
+	var age = year_now - yob
+	var r = fmt.Sprintf("Age is %d", age)
+	response.Reply(r)
 }
 
 func main() {
@@ -37,6 +51,14 @@ func main() {
 
 	// Print command events in parallel
 	go printCommandEvents(bot.CommandEvents())
+
+	var examples = []string{"My year of birth is 1990", "My year of birth is 2000"}
+
+	bot.Command("My year of birth is <year>", &slacker.CommandDefinition{
+		Description: "Year of birth calculator",
+		Examples: examples,
+		Handler: CountAge,
+	})
 
 	ctx, cancel := context.WithCancel(context.Background())
 
